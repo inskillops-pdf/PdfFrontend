@@ -1,20 +1,155 @@
 /* Styles pour les diagrammes Mermaid */
 
-.mermaid-container {
+/* Conteneur global du composant Mermaid */
+.mermaid-wrapper {
+  position: relative !important;
   margin: 2rem 0 !important;
+  border-radius: 0.5rem !important;
+  width: 100% !important;
+  overflow: visible !important;
+}
+
+/* Styles pour le conteneur principal du diagramme */
+.mermaid-container {
+  margin: 0.5rem 0 !important;
   padding: 1rem !important;
   background-color: white !important;
   border-radius: 0.5rem !important;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06) !important;
   overflow: auto !important;
   max-width: 100% !important;
+  transition: all 0.3s ease-in-out !important;
+  z-index: 1 !important;
 }
 
+/* Style pour le conteneur SVG */
+.mermaid-content {
+  overflow: auto !important;
+  display: flex !important;
+  justify-content: center !important;
+  width: 100% !important;
+}
+
+/* Style pour le conteneur en mode étendu */
+.mermaid-container.expanded {
+  position: fixed !important;
+  top: 5vh !important;
+  left: 5vw !important;
+  width: 90vw !important;
+  height: 85vh !important;
+  max-width: 90vw !important;
+  max-height: 85vh !important;
+  z-index: 1000 !important;
+  overflow: auto !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  border: 1px solid #e5e7eb !important;
+}
+
+/* Wrapper étendu */
+.expanded-wrapper {
+  position: relative !important;
+  z-index: 1000 !important;
+}
+
+/* Arrière-plan semi-transparent pour le mode étendu */
+.expanded-wrapper::after {
+  content: '' !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background-color: rgba(0, 0, 0, 0.5) !important;
+  z-index: 999 !important;
+}
+
+/* Styles pour les contrôles du diagramme */
+.mermaid-controls {
+  display: flex !important;
+  justify-content: flex-end !important;
+  margin-bottom: 0.5rem !important;
+}
+
+/* Bouton de contrôle */
+.mermaid-control-btn {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  padding: 0.25rem 0.75rem !important;
+  background-color: #f9fafb !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 0.375rem !important;
+  font-size: 0.75rem !important;
+  font-weight: 500 !important;
+  color: #374151 !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+}
+
+.mermaid-control-btn:hover {
+  background-color: #f3f4f6 !important;
+  color: #1f2937 !important;
+}
+
+.mermaid-control-btn svg {
+  width: 0.875rem !important;
+  height: 0.875rem !important;
+  stroke-width: 2 !important;
+}
+
+/* Bouton de fermeture pour le mode étendu */
+.mermaid-overlay-controls {
+  position: fixed !important;
+  top: 1rem !important;
+  right: 1rem !important;
+  z-index: 1001 !important;
+}
+
+.mermaid-close-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 2.5rem !important;
+  height: 2.5rem !important;
+  background-color: white !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 9999px !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24) !important;
+}
+
+.mermaid-close-btn:hover {
+  background-color: #f3f4f6 !important;
+  transform: scale(1.05) !important;
+}
+
+.mermaid-close-btn svg {
+  color: #6b7280 !important;
+}
+
+/* État de chargement */
+.mermaid-loading {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  min-height: 100px !important;
+}
+
+/* Styles pour le SVG du diagramme */
 .mermaid-container svg {
   max-width: 100% !important;
   height: auto !important;
   display: block !important;
   margin: 0 auto !important;
+}
+
+/* En mode étendu, permettre au SVG de s'ajuster */
+.mermaid-container.expanded svg {
+  max-height: calc(85vh - 4rem) !important;
+  width: auto !important;
+  min-width: 50% !important;
+  object-fit: contain !important;
 }
 
 /* Styles pour les erreurs de rendu Mermaid */
