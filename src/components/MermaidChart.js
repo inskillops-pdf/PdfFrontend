@@ -1,10 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import dynamic from "next/dynamic";
 
-// Importation dynamique de Mermaid pour éviter les problèmes de SSR
-const mermaid = dynamic(() => import("mermaid"), { ssr: false });
-
+// Utilisation de l'import dynamique pour le lazy loading
 export default function MermaidChart({ chart }) {
   const containerRef = useRef(null);
   const chartId = useRef(`mermaid-${Math.random().toString(36).substring(2, 11)}`);
@@ -12,76 +9,126 @@ export default function MermaidChart({ chart }) {
   const [svgContent, setSvgContent] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+  const renderAttempts = useRef(0);
+  const mermaidLoadedRef = useRef(false);
 
   // Fonction pour basculer l'état d'expansion
   const toggleExpand = () => {
     setExpanded(!expanded);
   };
 
+  // Chargement de Mermaid et rendu initial
   useEffect(() => {
-    // Fonction d'initialisation de Mermaid
-    const initializeMermaid = async () => {
+    let isMounted = true;
+    let renderTimer = null;
+    
+    // Fonction pour rendre le diagramme
+    const renderDiagram = async (mermaid) => {
+      if (!containerRef.current || !chart) return;
+      
       try {
-        if (!containerRef.current) return;
-
-        setIsLoading(true);
-        setErrorMessage('');
-
-        // Initialiser Mermaid avec des options
-        const mermaidAPI = await import("mermaid");
-        if (!mermaidAPI.default.initialize) {
-          setErrorMessage("Erreur: API Mermaid non disponible");
-          setIsLoading(false);
-          return;
+        if (isMounted) {
+          setIsLoading(true);
+          setErrorMessage('');
         }
-
-        mermaidAPI.default.initialize({
+        
+        // Nettoyer les anciens diagrammes s'ils existent
+        const existingSvg = containerRef.current.querySelector('svg');
+        if (existingSvg) {
+          existingSvg.remove();
+        }
+        
+        // Rendre le diagramme avec l'API Mermaid
+        const { svg } = await mermaid.render(
+          chartId.current,
+          chart.trim()
+        );
+        
+        if (isMounted) {
+          setSvgContent(svg);
+          setIsLoading(false);
+          renderAttempts.current = 0;
+        }
+      } catch (error) {
+        console.error("Erreur de rendu Mermaid:", error);
+        
+        // Tentatives supplémentaires en cas d'échec (maximum 3)
+        if (renderAttempts.current < 3) {
+          renderAttempts.current++;
+          console.log(`Tentative de rendu #${renderAttempts.current}...`);
+          
+          renderTimer = setTimeout(() => {
+            if (isMounted && containerRef.current) {
+              renderDiagram(mermaid);
+            }
+          }, 300 * renderAttempts.current);
+        } else if (isMounted) {
+          setErrorMessage(error.message || "Erreur de rendu du diagramme");
+          setIsLoading(false);
+        }
+      }
+    };
+    
+    // Chargement et initialisation de Mermaid
+    const loadMermaid = async () => {
+      if (mermaidLoadedRef.current) return;
+      
+      try {
+        // Import dynamique de Mermaid
+        const { default: mermaid } = await import('mermaid');
+        
+        if (!isMounted) return;
+        
+        // Initialiser avec les configurations
+        mermaid.initialize({
           startOnLoad: false,
           theme: "default",
           securityLevel: "loose",
           fontSize: 16,
           fontFamily: "'Fira Code', 'JetBrains Mono', 'SF Mono', monospace",
-          flowchart: {
-            curve: "basis",
-            htmlLabels: true
-          },
-          er: {
-            useMaxWidth: false
-          },
+          flowchart: { curve: "basis", htmlLabels: true },
+          er: { useMaxWidth: false },
           sequence: {
             useMaxWidth: false,
             showSequenceNumbers: false
           },
-          gantt: {
-            useMaxWidth: false
-          }
+          gantt: { useMaxWidth: false }
         });
-
-        // Rendre le diagramme
-        try {
-          const { svg } = await mermaidAPI.default.render(
-            chartId.current,
-            chart.trim()
-          );
-          
-          // Sauvegarder le contenu SVG pour pouvoir le réutiliser lors de l'expansion
-          setSvgContent(svg);
-          setIsLoading(false);
-        } catch (renderError) {
-          console.error("Mermaid rendering error:", renderError);
-          setErrorMessage(renderError.message || "Erreur inconnue");
+        
+        mermaidLoadedRef.current = true;
+        
+        // Attendre que le DOM soit complètement prêt
+        setTimeout(() => {
+          if (isMounted) renderDiagram(mermaid);
+        }, 100);
+      } catch (error) {
+        console.error("Erreur lors du chargement de Mermaid:", error);
+        if (isMounted) {
+          setErrorMessage("Impossible de charger la bibliothèque Mermaid");
           setIsLoading(false);
         }
-      } catch (error) {
-        console.error("Mermaid initialization error:", error);
-        setErrorMessage("Erreur d'initialisation de Mermaid");
-        setIsLoading(false);
       }
     };
 
-    // Exécuter l'initialisation une fois le composant monté
-    initializeMermaid();
+    // Déclencher le chargement
+    loadMermaid();
+    
+    // Nettoyage
+    return () => {
+      isMounted = false;
+      if (renderTimer) {
+        clearTimeout(renderTimer);
+      }
+    };
+  }, [chart]);
 
+  // Réinitialiser lors des changements de diagramme
+  useEffect(() => {
+    if (svgContent) {
+      setSvgContent('');
+      setIsLoading(true);
+      renderAttempts.current = 0;
+    }
   }, [chart]);
 
   // Rendu des contrôles et du contenu
@@ -92,6 +139,7 @@ export default function MermaidChart({ chart }) {
           onClick={toggleExpand} 
           className="mermaid-control-btn"
           title={expanded ? "Réduire le diagramme" : "Agrandir le diagramme"}
+          disabled={isLoading || !!errorMessage}
         >
           {expanded ? (
             <>

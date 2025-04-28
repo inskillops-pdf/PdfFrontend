@@ -1,17 +1,31 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeRaw from 'rehype-raw';
 import 'highlight.js/styles/github.css';
 
-// Import dynamique du composant MermaidChart
-const MermaidChart = lazy(() => import('./MermaidChart'));
+// Import dynamique du composant MermaidChart avec préchargement
+const MermaidChart = lazy(() => {
+  // Précharger Mermaid pour accélérer l'initialisation
+  if (typeof window !== 'undefined') {
+    import('mermaid').catch(err => 
+      console.warn('Préchargement de Mermaid échoué:', err)
+    );
+  }
+  return import('./MermaidChart');
+});
 
-// Fallback pour le chargement asynchrone
+// Fallback pour le chargement asynchrone plus informatif
 const MermaidFallback = () => (
   <div className="py-4 px-6 bg-gray-100 rounded border border-gray-200 text-center">
-    <p className="text-sm text-gray-500">Chargement du diagramme...</p>
+    <div className="flex items-center justify-center">
+      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      <p className="text-sm text-gray-600">Préparation du diagramme...</p>
+    </div>
   </div>
 );
 
@@ -45,9 +59,11 @@ const CodeBlock = ({ className, children }) => {
   // Rendre spécifiquement les diagrammes Mermaid
   if (language === 'mermaid') {
     return (
-      <Suspense fallback={<MermaidFallback />}>
-        <MermaidChart chart={codeContent} />
-      </Suspense>
+      <div className="my-6">
+        <Suspense fallback={<MermaidFallback />}>
+          <MermaidChart chart={codeContent} />
+        </Suspense>
+      </div>
     );
   }
   
@@ -65,7 +81,53 @@ const CodeBlock = ({ className, children }) => {
   );
 };
 
+// Précharger Mermaid au niveau du composant principal
 const MarkdownContent = ({ content }) => {
+  const [mermaidLoaded, setMermaidLoaded] = useState(false);
+  const hasMermaidDiagrams = content.includes('```mermaid');
+  
+  // Préchargement de Mermaid dès que possible
+  useEffect(() => {
+    let isMounted = true;
+    
+    const preloadMermaid = async () => {
+      if (hasMermaidDiagrams && !mermaidLoaded && typeof window !== 'undefined') {
+        try {
+          // Préchargement proactif dès le rendu du composant
+          const mermaidModule = await import('mermaid');
+          
+          if (!isMounted) return;
+          
+          // Initialiser avec les configurations
+          mermaidModule.default.initialize({
+            startOnLoad: false,
+            theme: "default",
+            securityLevel: "loose",
+            fontSize: 16,
+            fontFamily: "'Fira Code', 'JetBrains Mono', 'SF Mono', monospace",
+            flowchart: { curve: "basis", htmlLabels: true },
+            er: { useMaxWidth: false },
+            sequence: {
+              useMaxWidth: false,
+              showSequenceNumbers: false
+            },
+            gantt: { useMaxWidth: false }
+          });
+          
+          setMermaidLoaded(true);
+        } catch (err) {
+          console.warn('Chargement de Mermaid échoué:', err);
+        }
+      }
+    };
+    
+    preloadMermaid();
+    
+    return () => {
+      isMounted = false;
+    };
+  }, [hasMermaidDiagrams, mermaidLoaded]);
+
   return (
     <div className="markdown-content prose prose-blue prose-lg max-w-none">
       <ReactMarkdown 
