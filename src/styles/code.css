@@ -1,0 +1,180 @@
+/* Code Block Styles */
+
+/* Code blocks (pre) */
+pre {
+  background-color: #2d3748 !important; /* Fond bleu-gris foncé */
+  color: #e2e8f0 !important; /* Texte gris clair, pas blanc pur */
+  padding: 1.25rem !important;
+  margin: 1.5rem 0 !important;
+  border-radius: 0.5rem !important;
+  overflow-x: auto !important;
+  font-family: 'Fira Code', 'JetBrains Mono', 'SF Mono', 'Menlo', 'Monaco', 'Consolas', 'Courier New', monospace !important;
+  font-size: 0.9rem !important;
+  line-height: 1.6 !important;
+  border: 1px solid #4a5568 !important;
+  position: relative !important;
+  max-width: 100% !important;
+  tab-size: 2 !important;
+}
+
+/* Pour les blocs de code inline */
+:not(pre) > code {
+  background-color: rgba(226, 232, 240, 0.3) !important;
+  color: #d53f8c !important; /* Rose clair */
+  padding: 0.2em 0.4em !important;
+  border-radius: 0.25rem !important;
+  font-family: 'Fira Code', 'JetBrains Mono', 'SF Mono', 'Menlo', 'Monaco', 'Consolas', 'Courier New', monospace !important;
+  font-size: 0.9em !important;
+  white-space: nowrap !important;
+  border: 1px solid transparent !important;
+}
+
+/* Code à l'intérieur d'un bloc pre */
+pre > code {
+  color: #e2e8f0 !important; /* Texte gris clair */
+  background-color: transparent !important;
+  padding: 0 !important;
+  border: none !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+  width: 100% !important;
+  display: block !important;
+  overflow-x: auto !important;
+  white-space: pre !important;
+}
+
+/* Style pour différents langages */
+.language-js, .language-javascript {
+  color: #a3bffa !important; /* Bleu clair pour JavaScript */
+}
+
+.language-python {
+  color: #c6f6d5 !important; /* Vert clair pour Python */
+}
+
+.language-html, .language-xml {
+  color: #fbd38d !important; /* Jaune pour HTML/XML */
+}
+
+.language-css, .language-scss {
+  color: #feb2b2 !important; /* Rouge clair pour CSS */
+}
+
+.language-bash, .language-sh {
+  color: #9ae6b4 !important; /* Vert pour Bash */
+}
+
+/* Copier le bouton du bloc de code */
+.copy-button {
+  position: absolute !important;
+  top: 0.5rem !important;
+  right: 0.5rem !important;
+  padding: 0.25rem 0.5rem !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: #cbd5e0 !important;
+  border: 1px solid #4a5568 !important;
+  border-radius: 0.25rem !important;
+  font-size: 0.75rem !important;
+  font-family: sans-serif !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  opacity: 0.7 !important;
+  z-index: 10 !important;
+}
+
+.copy-button:hover {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  opacity: 1 !important;
+}
+
+.copy-button.copied {
+  background-color: #48bb78 !important; /* Vert */
+  color: white !important;
+}
+
+/* Langage badge */
+.code-language-badge {
+  position: absolute !important;
+  top: 0.5rem !important;
+  left: 0.5rem !important;
+  padding: 0.15rem 0.5rem !important;
+  background-color: rgba(0, 0, 0, 0.3) !important;
+  color: #cbd5e0 !important;
+  border-radius: 0.25rem !important;
+  font-size: 0.7rem !important;
+  font-family: sans-serif !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+}
+
+/* Pour le conteneur de code */
+.code-container {
+  position: relative !important;
+  margin: 1.5rem 0 !important;
+}
+
+/* Style de scrollbar pour les blocs de code */
+pre::-webkit-scrollbar {
+  height: 10px !important;
+  width: 10px !important;
+}
+
+pre::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2) !important;
+  border-radius: 0 0 0.5rem 0.5rem !important;
+}
+
+pre::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-radius: 5px !important;
+}
+
+pre::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Mise en valeur de la syntaxe */
+
+/* Nombres en jaune vif */
+.hljs-number, 
+.hljs-literal, 
+.hljs-variable.language_, 
+.language-javascript .hljs-boolean,
+.language-typescript .hljs-boolean,
+code span.token.number,
+code span.token.boolean {
+  color: #ffd700 !important; /* Jaune vif */
+  font-weight: bold !important;
+}
+
+/* Chaînes de caractères en orange clair */
+.hljs-string,
+.hljs-regexp,
+.hljs-addition,
+.hljs-attribute,
+.hljs-meta .hljs-string,
+code span.token.string,
+code span.token.char,
+code span.token.attr-value,
+code span.token.regex,
+code span.token.variable {
+  color: #ffb347 !important; /* Orange clair */
+}
+
+/* Nombres dans les blocs de code */
+[class*="hljs-"] span[style*="color"] {
+  color: #ffd700 !important; /* Jaune vif pour tous les nombres */
+  font-weight: bold !important;
+}
+
+/* Nombres in rehype-highlight */
+span.hljs-number {
+  color: #ffd700 !important; /* Jaune vif */
+  font-weight: bold !important;
+}
+
+/* Chaînes dans rehype-highlight */
+span.hljs-string {
+  color: #ffb347 !important; /* Orange clair */
+} 

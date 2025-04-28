@@ -26,27 +26,20 @@ const CopyButton = ({ code }) => {
   );
 };
 
-// Composant pour un bloc de code avec bouton de copie
+// Composant pour un bloc de code avec bouton de copie et badge de langage
 const CodeBlock = ({ className, children }) => {
   const match = /language-(\w+)/.exec(className || '');
   const language = match ? match[1] : 'code';
   const codeContent = String(children).replace(/\n$/, '');
   
   return (
-    <div className="code-container" data-language={language}>
+    <div className="code-container">
       <CopyButton code={codeContent} />
-      <pre className="rounded-md my-6 bg-gray-800 shadow-md">
-        <div className="relative">
-          <div className="absolute top-0 right-0 rounded-bl rounded-tr px-2 py-1 text-xs font-mono bg-gray-200 text-gray-600">
-            {language}
-          </div>
-          <code
-            className={`${className} block rounded-md p-4 bg-gray-800 text-white overflow-x-auto`}
-            style={{ display: 'block', padding: '1rem', color: 'white', overflow: 'auto' }}
-          >
-            {children}
-          </code>
-        </div>
+      <span className="code-language-badge">{language}</span>
+      <pre>
+        <code className={className}>
+          {children}
+        </code>
       </pre>
     </div>
   );
@@ -89,7 +82,7 @@ const MarkdownContent = ({ content }) => {
               if (match[1] === 'mermaid') {
                 // Pour Mermaid, juste afficher comme un bloc de code normal pour éviter les problèmes
                 return (
-                  <pre className="rounded-md my-6 bg-gray-50 border border-gray-200 p-4 overflow-auto">
+                  <pre className="mermaid-code">
                     <code className={className} {...props}>
                       {children}
                     </code>
@@ -107,7 +100,7 @@ const MarkdownContent = ({ content }) => {
             // Pour le code inline
             return (
               <code
-                className={`${className || ''} ${inline ? 'bg-gray-100 text-purple-600 px-1 py-0.5 rounded' : ''}`}
+                className={className || ''}
                 {...props}
               >
                 {children}
@@ -154,35 +147,6 @@ const MarkdownContent = ({ content }) => {
       </ReactMarkdown>
       
       <style jsx global>{`
-        .copy-button {
-          position: absolute;
-          top: 0.5rem;
-          right: 5rem;
-          z-index: 10;
-          font-size: 0.75rem;
-          padding: 0.25rem 0.5rem;
-          background-color: #f3f4f6;
-          border: 1px solid #d1d5db;
-          border-radius: 0.25rem;
-          color: #374151;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-        
-        .copy-button:hover {
-          background-color: #e5e7eb;
-        }
-        
-        .copy-button.copied {
-          background-color: #10b981;
-          color: white;
-          border-color: #059669;
-        }
-        
-        .code-container {
-          position: relative;
-        }
-
         /* Styles pour les onglets */
         .tabset {
           display: flex;
@@ -263,6 +227,12 @@ const MarkdownContent = ({ content }) => {
         .callout h3 {
           margin-top: 0;
           color: #1f2937;
+        }
+        
+        /* Style Mermaid temporaire */
+        .mermaid-code {
+          background-color: #f8fafc !important;
+          border: 1px dashed #94a3b8 !important;
         }
       `}</style>
     </div>
