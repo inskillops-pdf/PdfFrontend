@@ -1,0 +1,197 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary-600 hover:bg-primary-700 text-white font-bold py-2 px-4 rounded;
+  }
+  
+  .btn-secondary {
+    @apply bg-secondary-600 hover:bg-secondary-700 text-white font-bold py-2 px-4 rounded;
+  }
+  
+  .container-custom {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Code container and enhanced code block styles */
+  .code-container {
+    @apply relative rounded-lg shadow-lg overflow-hidden border border-gray-200 my-6;
+  }
+
+  .code-container pre {
+    @apply m-0 rounded-none pt-14 bg-[#1e293b] !important;
+  }
+
+  .code-container:before {
+    content: '';
+    @apply absolute top-0 left-0 right-0 h-10 bg-[#334155] z-10;
+  }
+
+  /* Code copy button styles */
+  .copy-button {
+    @apply absolute right-3 top-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium
+           py-1 px-3 rounded-full z-20 transition-all duration-200
+           flex items-center gap-1 shadow-sm;
+  }
+
+  .copy-button:before {
+    content: "";
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2'%3E%3C/path%3E%3C/svg%3E");
+    @apply w-3.5 h-3.5 inline-block;
+  }
+
+  .copy-button.copied {
+    @apply bg-green-600 hover:bg-green-700;
+  }
+
+  .copy-button.copied:before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M5 13l4 4L19 7'%3E%3C/path%3E%3C/svg%3E");
+  }
+
+  /* Language tag */
+  .code-container:after {
+    content: attr(data-language);
+    @apply absolute left-3 top-3 text-xs font-mono text-gray-300 z-20 uppercase tracking-wider;
+  }
+
+  /* Warning and tip boxes */
+  .warning-box {
+    @apply bg-yellow-50 border-l-4 border-yellow-400 p-4 my-4 rounded-r;
+  }
+
+  .warning-box h3 {
+    @apply text-yellow-800 font-bold mb-2;
+  }
+
+  .warning-box p {
+    @apply text-yellow-700;
+  }
+
+  .tip-box {
+    @apply bg-blue-50 border-l-4 border-blue-400 p-4 my-4 rounded-r;
+  }
+
+  .tip-box h3 {
+    @apply text-blue-800 font-bold mb-2;
+  }
+
+  .tip-box ul {
+    @apply text-blue-700 list-disc pl-5;
+  }
+
+  /* Role explanation boxes */
+  .role-explanation {
+    @apply grid grid-cols-1 md:grid-cols-3 gap-4 my-6;
+  }
+
+  .role {
+    @apply border rounded-md p-4;
+  }
+
+  .role.system {
+    @apply bg-purple-50 border-purple-200;
+  }
+
+  .role.user {
+    @apply bg-blue-50 border-blue-200;
+  }
+
+  .role.assistant {
+    @apply bg-green-50 border-green-200;
+  }
+
+  .role h4 {
+    @apply font-bold mb-2;
+  }
+
+  /* Exercise and solution spaces */
+  .exercise {
+    @apply border border-gray-300 rounded-lg p-6 my-6 bg-gray-50;
+  }
+
+  .solution-space {
+    @apply bg-white border border-dashed border-gray-300 p-4 rounded;
+  }
+
+  /* Callout styles */
+  .callout {
+    @apply p-4 my-4 border-l-4 rounded-r;
+  }
+
+  .callout.example {
+    @apply bg-green-50 border-green-500;
+  }
+
+  .callout.technique {
+    @apply bg-blue-50 border-blue-500;
+  }
+
+  .callout.advanced {
+    @apply bg-purple-50 border-purple-500;
+  }
+
+  .callout.info {
+    @apply bg-indigo-50 border-indigo-500;
+  }
+
+  .callout h3 {
+    @apply font-bold mb-2;
+  }
+
+  /* Tab system */
+  .tabset {
+    @apply my-6;
+  }
+
+  .tabset > input {
+    @apply sr-only;
+  }
+
+  .tabset > label {
+    @apply inline-block p-3 border-b-2 border-transparent cursor-pointer;
+  }
+
+  .tabset > input:checked + label {
+    @apply border-b-2 border-blue-500 font-medium text-blue-600;
+  }
+
+  .tabset > input:not(:checked) + label {
+    @apply text-gray-600 hover:text-gray-800 hover:border-gray-300;
+  }
+
+  .tab-panels > section {
+    @apply hidden p-4 border-t border-gray-200;
+  }
+
+  #tab1:checked ~ .tab-panels > #basics-panel,
+  #tab2:checked ~ .tab-panels > #intermediate-panel,
+  #tab3:checked ~ .tab-panels > #advanced-panel {
+    @apply block;
+  }
+} 
