@@ -1,9 +1,19 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeRaw from 'rehype-raw';
 import 'highlight.js/styles/github.css';
+
+// Import dynamique du composant MermaidChart
+const MermaidChart = lazy(() => import('./MermaidChart'));
+
+// Fallback pour le chargement asynchrone
+const MermaidFallback = () => (
+  <div className="py-4 px-6 bg-gray-100 rounded border border-gray-200 text-center">
+    <p className="text-sm text-gray-500">Chargement du diagramme...</p>
+  </div>
+);
 
 // Composant pour le bouton de copie avec état interne
 const CopyButton = ({ code }) => {
@@ -32,6 +42,16 @@ const CodeBlock = ({ className, children }) => {
   const language = match ? match[1] : 'code';
   const codeContent = String(children).replace(/\n$/, '');
   
+  // Rendre spécifiquement les diagrammes Mermaid
+  if (language === 'mermaid') {
+    return (
+      <Suspense fallback={<MermaidFallback />}>
+        <MermaidChart chart={codeContent} />
+      </Suspense>
+    );
+  }
+  
+  // Pour les autres langages, utiliser le style normal
   return (
     <div className="code-container">
       <CopyButton code={codeContent} />
@@ -79,21 +99,7 @@ const MarkdownContent = ({ content }) => {
             const match = /language-(\w+)/.exec(className || '');
             
             if (!inline && match) {
-              if (match[1] === 'mermaid') {
-                // Pour Mermaid, juste afficher comme un bloc de code normal pour éviter les problèmes
-                return (
-                  <pre className="mermaid-code">
-                    <code className={className} {...props}>
-                      {children}
-                    </code>
-                    <div className="text-xs text-gray-500 mt-2 italic">
-                      Mermaid diagrams are temporarily displayed as code.
-                    </div>
-                  </pre>
-                );
-              }
-              
-              // Pour les autres langages, utiliser le composant CodeBlock avec bouton de copie
+              // Utiliser le composant CodeBlock qui gère à la fois code standard et Mermaid
               return <CodeBlock className={className}>{children}</CodeBlock>;
             }
             
@@ -227,12 +233,6 @@ const MarkdownContent = ({ content }) => {
         .callout h3 {
           margin-top: 0;
           color: #1f2937;
-        }
-        
-        /* Style Mermaid temporaire */
-        .mermaid-code {
-          background-color: #f8fafc !important;
-          border: 1px dashed #94a3b8 !important;
         }
       `}</style>
     </div>

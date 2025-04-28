@@ -1,0 +1,149 @@
+/* Styles pour les diagrammes Mermaid */
+
+.mermaid-container {
+  margin: 2rem 0 !important;
+  padding: 1rem !important;
+  background-color: white !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06) !important;
+  overflow: auto !important;
+  max-width: 100% !important;
+}
+
+.mermaid-container svg {
+  max-width: 100% !important;
+  height: auto !important;
+  display: block !important;
+  margin: 0 auto !important;
+}
+
+/* Styles pour les erreurs de rendu Mermaid */
+.mermaid-error {
+  padding: 1rem !important;
+  background-color: #fee2e2 !important;
+  border: 1px solid #f87171 !important;
+  border-left: 4px solid #ef4444 !important;
+  border-radius: 0.375rem !important;
+  color: #b91c1c !important;
+  margin: 1rem 0 !important;
+}
+
+.mermaid-error p {
+  font-weight: bold !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.mermaid-error pre {
+  font-family: 'Fira Code', 'JetBrains Mono', 'SF Mono', 'Menlo', 'Monaco', 'Consolas', 'Courier New', monospace !important;
+  font-size: 0.875rem !important;
+  background-color: rgba(0, 0, 0, 0.05) !important;
+  padding: 0.5rem !important;
+  border-radius: 0.25rem !important;
+  overflow-x: auto !important;
+  white-space: pre-wrap !important;
+  margin-top: 0.5rem !important;
+}
+
+/* Styles pour les noeuds et les liens dans les diagrammes */
+.mermaid-container .node rect,
+.mermaid-container .node circle,
+.mermaid-container .node ellipse,
+.mermaid-container .node polygon,
+.mermaid-container .node path {
+  fill: #f0f9ff !important;
+  stroke: #2563eb !important;
+  stroke-width: 1px !important;
+}
+
+.mermaid-container .edgePath .path {
+  stroke: #64748b !important;
+  stroke-width: 1.5px !important;
+}
+
+.mermaid-container .arrowheadPath {
+  fill: #64748b !important;
+  stroke: none !important;
+}
+
+.mermaid-container .edgeLabel {
+  background-color: white !important;
+  padding: 0.1rem 0.3rem !important;
+  border-radius: 0.25rem !important;
+  font-size: 0.75rem !important;
+}
+
+/* Styles pour les labels des noeuds */
+.mermaid-container .label {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  font-size: 0.875rem !important;
+  color: #1e293b !important;
+}
+
+/* Amélioration de l'affichage pour les diagrammes de séquence */
+.mermaid-container .actor {
+  fill: #e0f2fe !important;
+  stroke: #0ea5e9 !important;
+}
+
+.mermaid-container .messageText {
+  fill: #1e293b !important;
+  stroke: none !important;
+  font-size: 0.8rem !important;
+}
+
+/* Styles pour les notes */
+.mermaid-container .note {
+  fill: #fef9c3 !important;
+  stroke: #ca8a04 !important;
+}
+
+/* Styles des classes pour les diagrammes de classe */
+.mermaid-container .classRect {
+  fill: #f1f5f9 !important;
+  stroke: #475569 !important;
+}
+
+.mermaid-container .classText {
+  fill: #1e293b !important;
+}
+
+/* Styles pour les diagrammes de Gantt */
+.mermaid-container .grid .tick line {
+  stroke: #e2e8f0 !important;
+}
+
+.mermaid-container .grid .tick text {
+  fill: #64748b !important;
+}
+
+.mermaid-container .today {
+  stroke: #f43f5e !important;
+  stroke-width: 2px !important;
+}
+
+.mermaid-container .section0,
+.mermaid-container .section2 {
+  fill: #f1f5f9 !important;
+}
+
+.mermaid-container .section1,
+.mermaid-container .section3 {
+  fill: #f8fafc !important;
+}
+
+.mermaid-container .task0,
+.mermaid-container .task2 {
+  fill: #93c5fd !important;
+  stroke: #2563eb !important;
+}
+
+.mermaid-container .task1,
+.mermaid-container .task3 {
+  fill: #bfdbfe !important;
+  stroke: #3b82f6 !important;
+}
+
+.mermaid-container .taskText {
+  fill: #1e293b !important;
+  font-size: 0.8rem !important;
+} 
