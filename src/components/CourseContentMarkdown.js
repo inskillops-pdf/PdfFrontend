@@ -228,32 +228,42 @@ const CourseContentMarkdown = ({
                 </div>
                 
                 {/* Lesson Navigation */}
-                <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-between">
-                  {activeLesson > 1 ? (
-                    <button 
-                      onClick={goToPreviousLesson}
-                      className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                    >
-                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                      </svg>
-                      Previous: {lessons[activeLesson - 2]?.title || 'Previous Lesson'}
-                    </button>
-                  ) : (
-                    <div></div>
-                  )}
+                <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+                  <div className="flex-1">
+                    {activeLesson > 1 ? (
+                      <button 
+                        onClick={goToPreviousLesson}
+                        className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        title={`Previous: ${lessons[activeLesson - 2]?.title || 'Previous Lesson'}`}
+                      >
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                        Previous
+                      </button>
+                    ) : (
+                      <div></div>
+                    )}
+                  </div>
                   
-                  {activeLesson < lessons.length && (
-                    <button 
-                      onClick={goToNextLesson}
-                      className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-                    >
-                      Next: {lessons[activeLesson]?.title || 'Next Lesson'}
-                      <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
-                  )}
+                  <div className="text-sm text-gray-500 hidden sm:block">
+                    Lesson {activeLesson} of {lessons.length}
+                  </div>
+                  
+                  <div className="flex-1 text-right">
+                    {activeLesson < lessons.length && (
+                      <button 
+                        onClick={goToNextLesson}
+                        className="inline-flex items-center px-4 py-2 border border-blue-600 text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-1 focus:ring-blue-700"
+                        title={`Next: ${lessons[activeLesson]?.title || 'Next Lesson'}`}
+                      >
+                        Next
+                        <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
               

@@ -2,8 +2,7 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/courses": "pages/courses.js",
-  "/courses/chatgpt-mastery": "pages/courses/chatgpt-mastery.js",
-  "/courses/chatgpt-mastery-course": "pages/courses/chatgpt-mastery-course.js",
-  "/courses/[courseSlug]/module/[moduleId]": "pages/courses/[courseSlug]/module/[moduleId].js"
+  "/": "pages/index.js",
+  "/courses/[courseSlug]/module/[moduleId]": "pages/courses/[courseSlug]/module/[moduleId].js",
+  "/courses": "pages/courses.js"
 }

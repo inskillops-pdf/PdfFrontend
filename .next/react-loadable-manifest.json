@@ -10,11 +10,5 @@
     "files": [
       "static/chunks/_pages-dir-browser_node_modules_next_dist_pages__error_js.js"
     ]
-  },
-  "pages\\courses\\[courseSlug]\\module\\[moduleId].js -> ../../../../components/CourseContentMarkdown": {
-    "id": "pages\\courses\\[courseSlug]\\module\\[moduleId].js -> ../../../../components/CourseContentMarkdown",
-    "files": [
-      "static/chunks/_pages-dir-browser_src_components_CourseContentMarkdown_js.js"
-    ]
   }
 }
