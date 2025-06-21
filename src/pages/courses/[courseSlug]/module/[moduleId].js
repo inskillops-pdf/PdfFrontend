@@ -3,6 +3,8 @@ import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
 import Layout from '../../../../components/Layout';
 import { loadModuleLessons, getModuleData } from '../../../../lib/markdown';
+import { AuthService } from '../../../../services/auth.service';
+import { EnrollmentService } from '../../../../services/enrollment.service';
 
 // Import dynamique du composant CourseContentMarkdown pour éviter les problèmes de SSR
 const CourseContentMarkdown = dynamic(
@@ -98,6 +100,67 @@ function CourseModule({ courseSlug, moduleData, lessons, moduleId }) {
   const router = useRouter();
   const [initialLessonId, setInitialLessonId] = useState(1);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isEnrolled, setIsEnrolled] = useState(false);
+  const [checkingEnrollment, setCheckingEnrollment] = useState(true);
+  const [enrollmentError, setEnrollmentError] = useState(null);
+  
+  const authService = new AuthService();
+  const enrollmentService = new EnrollmentService();
+
+  // Map course slugs to course refs for enrollment checking
+  const courseSlugToRef = {
+    'chatgpt-mastery': 'COURSE-6-A0GWYK',
+    'ai-bot-builder': 'COURSE-7-PJKSRN',
+    'prompt-engineering': 'COURSE-8-OBCVJO',
+    'midjourney-mastery': 'COURSE-9-XYZ123',
+    'ai-business-integration': 'COURSE-10-ABC456',
+    'llm-fine-tuning': 'COURSE-11-DEF789'
+  };
+
+  // Check enrollment status
+  useEffect(() => {
+    const checkEnrollment = async () => {
+      // Check if user is authenticated
+      if (!authService.isAuthenticated()) {
+        router.push('/login');
+        return;
+      }
+
+      try {
+        setCheckingEnrollment(true);
+        const courseRef = courseSlugToRef[courseSlug];
+        
+        if (!courseRef) {
+          setEnrollmentError('Course not found');
+          setCheckingEnrollment(false);
+          return;
+        }
+
+        // Get user enrollments
+        const response = await enrollmentService.getAllEnrollmentsByUserInSession();
+        if (response.success && response.data) {
+          const userEnrollment = response.data.find(enrollment => 
+            enrollment.course?.ref === courseRef
+          );
+          
+          if (userEnrollment) {
+            setIsEnrolled(true);
+          } else {
+            setEnrollmentError('You are not enrolled in this course');
+          }
+        } else {
+          setEnrollmentError('Failed to check enrollment status');
+        }
+      } catch (error) {
+        console.error('Error checking enrollment:', error);
+        setEnrollmentError('Failed to verify course access');
+      } finally {
+        setCheckingEnrollment(false);
+      }
+    };
+
+    checkEnrollment();
+  }, [courseSlug, router]);
   
   // Désactiver le rechargement complet de la page lors des changements de route
   useEffect(() => {
@@ -115,7 +178,7 @@ function CourseModule({ courseSlug, moduleData, lessons, moduleId }) {
   
   // Effet pour récupérer la leçon sauvegardée lors du montage du composant
   useEffect(() => {
-    if (typeof window !== 'undefined' && !isLoaded) {
+    if (typeof window !== 'undefined' && !isLoaded && isEnrolled) {
       try {
         const storageKey = `${courseSlug}-module-${moduleId}-lesson`;
         const savedLesson = sessionStorage.getItem(storageKey);
@@ -130,7 +193,7 @@ function CourseModule({ courseSlug, moduleData, lessons, moduleId }) {
         setIsLoaded(true);
       }
     }
-  }, [courseSlug, moduleId, isLoaded]);
+  }, [courseSlug, moduleId, isLoaded, isEnrolled]);
   
   // Mémoriser le titre de la page
   const pageTitle = useMemo(() => {
@@ -143,6 +206,50 @@ function CourseModule({ courseSlug, moduleData, lessons, moduleId }) {
     
     return `Module ${moduleData.id}: ${moduleData.title} | ${courseNames[courseSlug] || moduleData.courseTitle}`;
   }, [courseSlug, moduleData]);
+  
+  // Show loading while checking enrollment
+  if (checkingEnrollment) {
+    return (
+      <Layout title="Verifying Access...">
+        <div className="container mx-auto px-4 py-20 text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+          <h1 className="text-2xl font-bold mb-4">Verifying Course Access...</h1>
+          <p className="text-gray-600">Please wait while we verify your enrollment.</p>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Show error if not enrolled
+  if (enrollmentError) {
+    return (
+      <Layout title="Access Denied">
+        <div className="container mx-auto px-4 py-20 text-center">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-8 max-w-md mx-auto">
+            <svg className="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            <h1 className="text-2xl font-bold text-red-800 mb-4">Access Denied</h1>
+            <p className="text-red-600 mb-6">{enrollmentError}</p>
+            <div className="space-y-3">
+              <button
+                onClick={() => router.push('/courses')}
+                className="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-md transition duration-150 ease-in-out"
+              >
+                Browse Courses
+              </button>
+              <button
+                onClick={() => router.push('/dashboard')}
+                className="w-full bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-md transition duration-150 ease-in-out"
+              >
+                Go to Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
   
   // Afficher un état de chargement si les données sont en cours de récupération
   if (router.isFallback) {
@@ -158,7 +265,7 @@ function CourseModule({ courseSlug, moduleData, lessons, moduleId }) {
 
   return (
     <Layout title={pageTitle}>
-      {isLoaded && (
+      {isLoaded && isEnrolled && (
         <CourseContentMarkdown 
           moduleData={moduleData}
           lessons={lessons}

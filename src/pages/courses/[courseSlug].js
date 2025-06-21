@@ -1,16 +1,36 @@
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '../../components/Layout';
 import Image from 'next/image';
 import Link from 'next/link';
+import { CourseService } from '../../services/course.service';
+import { PaymentService } from '../../services/payment.service';
+import { EnrollmentService } from '../../services/enrollment.service';
+import { AuthService } from '../../services/auth.service';
 
 export default function CourseDetail() {
+  const [course, setCourse] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [purchasing, setPurchasing] = useState(false);
+  const [enrolling, setEnrolling] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isEnrolled, setIsEnrolled] = useState(false);
+  const [enrollmentStatus, setEnrollmentStatus] = useState(null);
+  
   const router = useRouter();
   const { courseSlug } = router.query;
   
-  // Course data (in a real app, this would come from an API or database)
+  const courseService = new CourseService();
+  const paymentService = new PaymentService();
+  const enrollmentService = new EnrollmentService();
+  const authService = new AuthService();
+
+  // Static course data (fallback)
   const allCourses = [
     {
       id: 'chatgpt-mastery',
+      ref: 'COURSE-6-A0GWYK',
       title: 'ChatGPT Mastery',
       description: 'Learn how to leverage ChatGPT for business applications and content creation. Master prompt engineering and get the most out of AI language models.',
       image: 'https://images.unsplash.com/photo-1678995632928-298d05d41671',
@@ -48,6 +68,7 @@ export default function CourseDetail() {
     },
     {
       id: 'ai-bot-builder',
+      ref: 'COURSE-7-PJKSRN',
       title: 'AI Bot Builder',
       description: 'Create custom AI bots for customer service, sales, and lead generation. Learn practical bot development with real-world applications.',
       image: 'https://images.unsplash.com/photo-1589254065878-42c9da997008',
@@ -85,6 +106,7 @@ export default function CourseDetail() {
     },
     {
       id: 'prompt-engineering',
+      ref: 'COURSE-8-OBCVJO',
       title: 'Advanced Prompt Engineering',
       description: 'Master the art of crafting effective prompts for any AI model. Unlock the full potential of AI through strategic and creative prompting.',
       image: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485',
@@ -122,6 +144,7 @@ export default function CourseDetail() {
     },
     {
       id: 'midjourney-mastery',
+      ref: 'MIDJOURNEY-MASTERY-001',
       title: 'Midjourney Image Generation Mastery',
       description: 'Create stunning AI-generated artwork and imagery with Midjourney. Learn advanced techniques for creating commercial-quality visuals.',
       image: 'https://images.unsplash.com/photo-1642427749670-f20e2e76ed8c',
@@ -159,6 +182,7 @@ export default function CourseDetail() {
     },
     {
       id: 'ai-business-integration',
+      ref: 'AI-BUSINESS-INTEGRATION-001',
       title: 'AI Business Integration',
       description: 'Implement AI solutions in your business operations. Increase efficiency, reduce costs, and drive innovation with practical AI implementations.',
       image: 'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3',
@@ -196,6 +220,7 @@ export default function CourseDetail() {
     },
     {
       id: 'llm-fine-tuning',
+      ref: 'LLM-FINE-TUNING-001',
       title: 'LLM Fine-Tuning & Training',
       description: 'Learn to train and fine-tune large language models for specific business applications. Create custom AI models tailored to your needs.',
       image: 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4',
@@ -233,8 +258,157 @@ export default function CourseDetail() {
     }
   ];
 
-  // Find the course by ID
-  const course = allCourses.find(c => c.id === courseSlug);
+  useEffect(() => {
+    // Check authentication status
+    const checkAuth = () => {
+      const authenticated = authService.isAuthenticated();
+      setIsAuthenticated(authenticated);
+      
+      if (!authenticated) {
+        // Don't redirect immediately, let user see the course but show login prompt
+        console.log('User not authenticated');
+      }
+    };
+
+    checkAuth();
+
+    if (courseSlug) {
+      fetchCourseDetails();
+    }
+  }, [courseSlug]);
+
+  const checkEnrollmentStatus = async (courseRef) => {
+    if (!isAuthenticated) {
+      setIsEnrolled(false);
+      setEnrollmentStatus(null);
+      return;
+    }
+
+    try {
+      const response = await enrollmentService.getAllEnrollmentsByUserInSession();
+      if (response.success && response.data) {
+        const userEnrollment = response.data.find(enrollment => 
+          enrollment.course?.ref === courseRef
+        );
+        
+        if (userEnrollment) {
+          setIsEnrolled(true);
+          setEnrollmentStatus(userEnrollment.enrollmentStatus);
+        } else {
+          setIsEnrolled(false);
+          setEnrollmentStatus(null);
+        }
+      }
+    } catch (error) {
+      console.error('Error checking enrollment status:', error);
+      setIsEnrolled(false);
+      setEnrollmentStatus(null);
+    }
+  };
+
+  const fetchCourseDetails = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Try to fetch from API first
+      if (isAuthenticated) {
+        try {
+          const response = await courseService.getCourseById(courseSlug);
+          if (response.success) {
+            setCourse(response.data);
+            // Check enrollment status after getting course data
+            await checkEnrollmentStatus(response.data.ref);
+            return;
+          }
+        } catch (apiError) {
+          console.log('API fetch failed, using static data:', apiError);
+        }
+      }
+      
+      // Fallback to static data
+      const staticCourse = allCourses.find(c => c.id === courseSlug);
+      if (staticCourse) {
+        setCourse(staticCourse);
+        // Check enrollment status for static course
+        await checkEnrollmentStatus(staticCourse.ref);
+      }
+    } catch (err) {
+      console.error('Error fetching course details:', err);
+      setError('Failed to load course details. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(price);
+  };
+
+  const handlePurchase = async () => {
+    if (!isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+
+    try {
+      setPurchasing(true);
+      setError(null);
+
+      // Get current user for email
+      const currentUser = authService.getCurrentUser();
+
+      // Create payment request matching Spring Boot DTO
+      const paymentRequest = {
+        currency: 'USD',
+        quantity: 1,
+        name: course.title,
+        duration: 30, // You might want to make this configurable or get from course
+        email: currentUser?.email || ''
+      };
+
+      // Call checkout endpoint
+      const response = await paymentService.checkoutCourse(paymentRequest, course.idCourse || course.id);
+      
+      if (response.success && response.data?.sessionUrl) {
+        // Redirect to Stripe checkout using sessionUrl
+        window.location.href = response.data.sessionUrl;
+      } else {
+        setError('Failed to create checkout session. Please try again.');
+      }
+    } catch (err) {
+      console.error('Error purchasing course:', err);
+      setError('Failed to process purchase. Please try again.');
+    } finally {
+      setPurchasing(false);
+    }
+  };
+
+  const handleBuy = async () => {
+    if (!isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+
+    try {
+      setEnrolling(true);
+      setError(null);
+
+      // Since enrollment creation is not available in the backend,
+      // we'll redirect to checkout or show a message
+      // For now, redirect to checkout with the course information
+      router.push(`/checkout?course=${course.id}&ref=${course.ref}`);
+      
+    } catch (err) {
+      console.error('Error processing course purchase:', err);
+      setError('Failed to process course purchase. Please try again.');
+    } finally {
+      setEnrolling(false);
+    }
+  };
 
   // If course not found or still loading (router.query.courseSlug might be undefined during initial render)
   if (!course && router.isReady) {
@@ -262,6 +436,19 @@ export default function CourseDetail() {
         <div className="container-custom py-20">
           <div className="flex justify-center">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Show error if any
+  if (error) {
+    return (
+      <Layout title="Error - AI Geneuron Courses">
+        <div className="container-custom py-20">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            {error}
           </div>
         </div>
       </Layout>
@@ -307,12 +494,74 @@ export default function CourseDetail() {
                   </svg>
                   {course.rating} ({course.reviewCount} reviews)
                 </div>
+
+                {/* Course Reference */}
+                <div className="bg-white rounded-full px-4 py-1 text-sm flex items-center">
+                  <svg className="w-4 h-4 text-primary-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                  </svg>
+                  Ref: {course.ref}
+                </div>
+
+                {/* Enrollment Status */}
+                {isAuthenticated && isEnrolled && (
+                  <div className="bg-green-100 text-green-800 rounded-full px-4 py-1 text-sm flex items-center">
+                    <svg className="w-4 h-4 text-green-600 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    {enrollmentStatus === 'ACTIVE' ? 'Enrolled' : 
+                     enrollmentStatus === 'COMPLETED' ? 'Completed' : 
+                     enrollmentStatus === 'PENDING' ? 'Pending' : 'Enrolled'}
+                  </div>
+                )}
               </div>
               
               <div className="flex flex-wrap gap-4">
-                <Link href={`/courses/${course.id}/enroll`} className="btn-primary py-3 px-8">
-                  Enroll Now - ${course.price}
-                </Link>
+                {!isAuthenticated ? (
+                  <Link href="/login" className="btn-primary py-3 px-8">
+                    Login to Enroll - {formatPrice(course.price)}
+                  </Link>
+                ) : isEnrolled ? (
+                  <>
+                    <Link href="/dashboard" className="btn-primary py-3 px-8">
+                      Continue Learning
+                    </Link>
+                    <Link href={`/courses/${course.id}/module/1`} className="btn-secondary py-3 px-8">
+                      Start Course
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={handleBuy}
+                      disabled={enrolling}
+                      className="btn-primary py-3 px-8 disabled:opacity-50"
+                    >
+                      {enrolling ? (
+                        <div className="flex items-center">
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                          Processing...
+                        </div>
+                      ) : (
+                        `Enroll Now - ${formatPrice(course.price)}`
+                      )}
+                    </button>
+                    <button
+                      onClick={handlePurchase}
+                      disabled={purchasing}
+                      className="btn-secondary py-3 px-8 disabled:opacity-50"
+                    >
+                      {purchasing ? (
+                        <div className="flex items-center">
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600 mr-2"></div>
+                          Processing...
+                        </div>
+                      ) : (
+                        'Buy Now'
+                      )}
+                    </button>
+                  </>
+                )}
                 <Link href="#curriculum" className="btn-secondary py-3 px-8">
                   View Curriculum
                 </Link>
@@ -425,9 +674,43 @@ export default function CourseDetail() {
                 </div>
                 
                 <div className="border-t border-gray-200 pt-6">
-                  <Link href={`/courses/${course.id}/enroll`} className="block w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-3 px-4 rounded text-center transition duration-150 ease-in-out">
-                    Enroll Now - ${course.price}
-                  </Link>
+                  {!isAuthenticated ? (
+                    <Link href="/login" className="block w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-3 px-4 rounded text-center transition duration-150 ease-in-out">
+                      Login to Enroll - {formatPrice(course.price)}
+                    </Link>
+                  ) : isEnrolled ? (
+                    <div className="space-y-3">
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+                        <div className="text-green-800 font-medium mb-2">
+                          {enrollmentStatus === 'ACTIVE' ? '✓ Enrolled' : 
+                           enrollmentStatus === 'COMPLETED' ? '✓ Course Completed' : 
+                           enrollmentStatus === 'PENDING' ? '⏳ Enrollment Pending' : '✓ Enrolled'}
+                        </div>
+                        <p className="text-green-600 text-sm">You have access to this course</p>
+                      </div>
+                      <Link href="/dashboard" className="block w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-3 px-4 rounded text-center transition duration-150 ease-in-out">
+                        Continue Learning
+                      </Link>
+                      <Link href={`/courses/${course.id}/module/1`} className="block w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded text-center transition duration-150 ease-in-out">
+                        Start Course
+                      </Link>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={handleBuy}
+                      disabled={enrolling}
+                      className="block w-full bg-primary-600 hover:bg-primary-700 disabled:bg-primary-400 text-white font-bold py-3 px-4 rounded text-center transition duration-150 ease-in-out"
+                    >
+                      {enrolling ? (
+                        <div className="flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                          Processing...
+                        </div>
+                      ) : (
+                        `Enroll Now - ${formatPrice(course.price)}`
+                      )}
+                    </button>
+                  )}
                   <p className="text-center text-sm text-gray-500 mt-4">30-day money-back guarantee</p>
                 </div>
               </div>

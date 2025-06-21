@@ -1,85 +1,88 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Image from 'next/image';
 import Link from 'next/link';
 import Layout from '../components/Layout';
-import { auth, db } from '../lib/firebase';
-import { useAuthState } from 'react-firebase-hooks/auth';
+import { AuthService } from '../services/auth.service';
+import { EnrollmentService } from '../services/enrollment.service';
 
 export default function Dashboard() {
-  const [user, loading] = useAuthState(auth);
-  const [userCourses, setUserCourses] = useState([]);
-  const [userProfile, setUserProfile] = useState(null);
+  const [user, setUser] = useState(null);
+  const [enrolledCourses, setEnrolledCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
   const router = useRouter();
-  
-  // Dummy courses data (in a real app, this would come from the database)
-  const courses = [
-    {
-      id: 'chatgpt-mastery',
-      title: 'ChatGPT Mastery',
-      description: 'Learn how to leverage ChatGPT for business applications and content creation.',
-      image: '/images/course-1.jpg',
-      progress: 65,
-      lessonsCompleted: 98,
-      totalLessons: 152
-    },
-    {
-      id: 'ai-bot-builder',
-      title: 'AI Bot Builder',
-      description: 'Create custom AI bots for customer service, sales, and lead generation.',
-      image: '/images/course-2.jpg',
-      progress: 30,
-      lessonsCompleted: 29,
-      totalLessons: 97
-    },
-    {
-      id: 'prompt-engineering',
-      title: 'Advanced Prompt Engineering',
-      description: 'Master the art of crafting effective prompts for any AI model.',
-      image: '/images/course-3.jpg',
-      progress: 10,
-      lessonsCompleted: 5,
-      totalLessons: 48
-    }
-  ];
-  
+  const authService = new AuthService();
+  const enrollmentService = new EnrollmentService();
+
+  // Map course refs to course slugs for URL generation
+  const courseRefToSlug = {
+    'COURSE-6-A0GWYK': 'chatgpt-mastery',
+    'COURSE-7-PJKSRN': 'ai-bot-builder',
+    'COURSE-8-OBCVJO': 'prompt-engineering',
+    'COURSE-9-XYZ123': 'midjourney-mastery',
+    'COURSE-10-ABC456': 'ai-business-integration',
+    'COURSE-11-DEF789': 'llm-fine-tuning'
+  };
+
   useEffect(() => {
-    // If user is not logged in, redirect to login page
-    if (!loading && !user) {
-      router.push('/login?redirect=/dashboard');
+    // Check if user is authenticated
+    if (!authService.isAuthenticated()) {
+      router.push('/login');
       return;
     }
-    
-    // Fetch user data
-    if (user) {
-      const fetchUserData = async () => {
-        try {
-          // In a real app, you would fetch the user's courses from Firestore
-          // For demo purposes, we'll use the dummy data
-          setUserCourses(courses);
-          setUserProfile({
-            name: user.displayName || 'AI Student',
-            email: user.email,
-            photoURL: user.photoURL || '/images/default-avatar.png',
-            joinDate: new Date().toLocaleDateString(),
-            membershipType: 'Pro'
-          });
-          
-        } catch (error) {
-          console.error('Error fetching user data:', error);
-        }
-      };
-      
-      fetchUserData();
+
+    // Get user data from localStorage
+    const userData = authService.getCurrentUser();
+    if (!userData) {
+      router.push('/login');
+      return;
     }
-  }, [user, loading, router]);
-  
-  if (loading || !user) {
+
+    setUser(userData);
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Fetch user's enrolled courses
+      const enrollmentsResponse = await enrollmentService.getAllEnrollmentsByUserInSession();
+      if (enrollmentsResponse.success) {
+        setEnrolledCourses(enrollmentsResponse.data);
+      }
+    } catch (err) {
+      console.error('Error fetching dashboard data:', err);
+      setError('Failed to load dashboard data. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleContinueLearning = (enrollment) => {
+    const courseRef = enrollment.course?.ref;
+    const courseSlug = courseRefToSlug[courseRef];
+    
+    if (courseSlug) {
+      // Redirect to module 1 of the course
+      router.push(`/courses/${courseSlug}/module/1`);
+    } else {
+      // Fallback to courses page if course slug not found
+      router.push('/courses');
+    }
+  };
+
+  if (loading) {
     return (
-      <Layout title="Loading Dashboard - AI Professionals University">
-        <div className="container-custom py-16">
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+      <Layout title="Dashboard - AI Professionals University">
+        <div className="min-h-screen bg-gray-50 py-8">
+          <div className="container-custom">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading your dashboard...</p>
+            </div>
           </div>
         </div>
       </Layout>
@@ -88,158 +91,103 @@ export default function Dashboard() {
 
   return (
     <Layout title="Dashboard - AI Professionals University">
-      <div className="bg-gray-50 min-h-screen">
-        <div className="container-custom py-8">
-          {/* Welcome header */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <div className="flex flex-col md:flex-row items-center justify-between">
-              <div className="flex items-center mb-4 md:mb-0">
-                {userProfile?.photoURL && (
-                  <div className="relative h-16 w-16 rounded-full overflow-hidden mr-4 border-2 border-primary-500">
-                    <Image
-                      src={userProfile.photoURL}
-                      alt={userProfile.name}
-                      fill
-                      style={{ objectFit: "cover" }}
-                    />
-                  </div>
-                )}
-                <div>
-                  <h1 className="text-2xl font-bold">Welcome, {userProfile?.name}!</h1>
-                  <p className="text-gray-600">
-                    {userProfile?.membershipType} Member · Joined {userProfile?.joinDate}
-                  </p>
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="container-custom">
+          {/* Welcome Section */}
+          <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <h1 className="text-2xl font-bold text-gray-900">
+              Welcome back, {user?.firstName} {user?.lastName}!
+            </h1>
+            <p className="text-gray-600 mt-2">
+              {user?.email} • {user?.roleTypes}
+            </p>
+          </div>
+
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+              {error}
+            </div>
+          )}
+
+          {/* Quick Actions */}
+          <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Link 
+                href="/courses" 
+                className="flex items-center p-4 bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors duration-150"
+              >
+                <div className="flex-1">
+                  <h3 className="font-semibold text-primary-900">Browse Courses</h3>
+                  <p className="text-sm text-primary-700">Explore our available courses</p>
                 </div>
-              </div>
-              <div>
-                <Link href="/settings" className="btn-secondary">
-                  Account Settings
-                </Link>
-              </div>
+                <svg className="w-6 h-6 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+              
+              <Link 
+                href="/profile" 
+                className="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-150"
+              >
+                <div className="flex-1">
+                  <h3 className="font-semibold text-gray-900">My Profile</h3>
+                  <p className="text-sm text-gray-700">View and edit your profile</p>
+                </div>
+                <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
             </div>
           </div>
-          
-          {/* Progress summary */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h2 className="text-xl font-bold mb-4">Your Progress</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="font-semibold">Courses Enrolled</h3>
-                  <span className="text-2xl font-bold text-primary-600">{userCourses.length}</span>
-                </div>
-                <p className="text-sm text-gray-600">Keep going! You're making great progress.</p>
-              </div>
-              
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="font-semibold">Lessons Completed</h3>
-                  <span className="text-2xl font-bold text-primary-600">
-                    {userCourses.reduce((total, course) => total + course.lessonsCompleted, 0)}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-600">Out of {userCourses.reduce((total, course) => total + course.totalLessons, 0)} total lessons</p>
-              </div>
-              
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="font-semibold">Overall Completion</h3>
-                  <span className="text-2xl font-bold text-primary-600">
-                    {Math.round(
-                      (userCourses.reduce((total, course) => total + course.lessonsCompleted, 0) /
-                        userCourses.reduce((total, course) => total + course.totalLessons, 0)) *
-                        100
-                    )}%
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2.5">
-                  <div 
-                    className="bg-primary-600 h-2.5 rounded-full" 
-                    style={{ 
-                      width: `${Math.round(
-                        (userCourses.reduce((total, course) => total + course.lessonsCompleted, 0) /
-                          userCourses.reduce((total, course) => total + course.totalLessons, 0)) *
-                          100
-                      )}%` 
-                    }}
-                  ></div>
-                </div>
-              </div>
+
+          {/* Enrolled Courses Section */}
+          <div className="mb-8">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-gray-900">Your Enrolled Courses</h2>
+              <Link 
+                href="/courses" 
+                className="text-primary-600 hover:text-primary-700 font-medium text-sm"
+              >
+                View All Courses →
+              </Link>
             </div>
-          </div>
-          
-          {/* My Courses */}
-          <h2 className="text-2xl font-bold mb-6">My Courses</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {userCourses.map((course) => (
-              <div key={course.id} className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div className="relative h-48">
-                  <Image
-                    src={course.image}
-                    alt={course.title}
-                    fill
-                    style={{ objectFit: "cover" }}
-                  />
-                </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-bold mb-2">{course.title}</h3>
-                  <p className="text-gray-600 mb-4">{course.description}</p>
-                  
-                  <div className="mb-4">
-                    <div className="flex justify-between mb-1">
-                      <span className="text-sm font-medium text-gray-700">Progress: {course.progress}%</span>
-                      <span className="text-sm font-medium text-gray-700">
-                        {course.lessonsCompleted}/{course.totalLessons} lessons
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2.5">
-                      <div 
-                        className="bg-primary-600 h-2.5 rounded-full" 
-                        style={{ width: `${course.progress}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                  
-                  <Link 
-                    href={`/courses/${course.id}`} 
-                    className="block w-full text-center bg-primary-600 hover:bg-primary-700 text-white font-bold py-2 px-4 rounded"
-                  >
-                    {course.progress > 0 ? 'Continue Learning' : 'Start Course'}
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          {/* Recommended Courses */}
-          <h2 className="text-2xl font-bold mt-12 mb-6">Recommended for You</h2>
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex flex-col md:flex-row items-center">
-              <div className="mb-4 md:mb-0 md:mr-6 flex-shrink-0">
-                <div className="relative h-20 w-20 md:h-32 md:w-32">
-                  <Image
-                    src="/images/recommended-course.jpg"
-                    alt="AI for Business Strategy"
-                    fill
-                    style={{ objectFit: "cover" }}
-                    className="rounded-lg"
-                  />
-                </div>
-              </div>
-              <div className="flex-grow">
-                <h3 className="text-xl font-bold mb-2">AI for Business Strategy</h3>
-                <p className="text-gray-600 mb-4">
-                  Learn how to develop comprehensive AI strategies for your business or clients. 
-                  Perfect next step after completing the ChatGPT Mastery course.
-                </p>
+            
+            {enrolledCourses.length === 0 ? (
+              <div className="bg-white rounded-lg shadow-sm p-6 text-center">
+                <p className="text-gray-600 mb-4">You haven't enrolled in any courses yet.</p>
                 <Link 
-                  href="/courses/ai-business-strategy" 
-                  className="inline-block bg-secondary-600 hover:bg-secondary-700 text-white font-bold py-2 px-4 rounded"
+                  href="/courses" 
+                  className="inline-block bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-md text-sm transition duration-150 ease-in-out"
                 >
-                  View Course
+                  Browse Available Courses
                 </Link>
               </div>
-            </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {enrolledCourses.map((enrollment) => (
+                  <div key={enrollment.idEnrollment} className="bg-white rounded-lg shadow-sm overflow-hidden">
+                    <div className="p-6">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        {enrollment.course?.title}
+                      </h3>
+                      <p className="text-sm text-gray-600 mb-2">
+                        Ref: <span className="font-mono text-xs">{enrollment.course?.ref}</span>
+                      </p>
+                      <p className="text-sm text-gray-600 mb-4">
+                        Status: <span className="font-medium">{enrollment.enrollmentStatus}</span>
+                      </p>
+                      <button
+                        onClick={() => handleContinueLearning(enrollment)}
+                        className="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-md text-sm transition duration-150 ease-in-out"
+                      >
+                        Continue Learning →
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -1,21 +1,45 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { auth } from '../lib/firebase';
-import { useAuthState } from 'react-firebase-hooks/auth';
+import { AuthService } from '../services/auth.service';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  
   const router = useRouter();
-  const [user, loading] = useAuthState(auth);
+  const authService = new AuthService();
+
+  useEffect(() => {
+    // Check authentication status on component mount
+    const checkAuth = () => {
+      if (authService.isAuthenticated()) {
+        const userData = authService.getCurrentUser();
+        setUser(userData);
+      }
+      setLoading(false);
+    };
+
+    checkAuth();
+  }, []);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  const signOut = () => {
-    auth.signOut();
+  const handleLogout = () => {
+    authService.logout();
+    setUser(null);
     router.push('/');
+  };
+
+  const handleDashboardClick = () => {
+    if (user) {
+      router.push('/dashboard');
+    } else {
+      router.push('/login?redirect=/dashboard');
+    }
   };
 
   return (
@@ -38,26 +62,38 @@ export default function Navbar() {
               About
             </Link>
             
-            {user ? (
+            {!loading && (
               <>
-                <Link href="/dashboard" className="text-gray-700 hover:text-primary-600">
-                  Dashboard
-                </Link>
-                <button 
-                  onClick={signOut}
-                  className="btn-secondary"
-                >
-                  Sign Out
-                </button>
-              </>
-            ) : (
-              <>
-                <Link href="/login" className="text-gray-700 hover:text-primary-600">
-                  Login
-                </Link>
-                <Link href="/signup" className="btn-primary">
-                  Get Started
-                </Link>
+                {user ? (
+                  <>
+                    <button 
+                      onClick={handleDashboardClick}
+                      className="text-gray-700 hover:text-primary-600"
+                    >
+                      Dashboard
+                    </button>
+                    <div className="flex items-center space-x-4">
+                      <span className="text-sm text-gray-600">
+                        Welcome, {user.firstName}
+                      </span>
+                      <button 
+                        onClick={handleLogout}
+                        className="btn-secondary"
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <Link href="/login" className="text-gray-700 hover:text-primary-600">
+                      Login
+                    </Link>
+                    <Link href="/signup" className="btn-primary">
+                      Get Started
+                    </Link>
+                  </>
+                )}
               </>
             )}
           </div>
@@ -100,26 +136,36 @@ export default function Navbar() {
               About
             </Link>
             
-            {user ? (
+            {!loading && (
               <>
-                <Link href="/dashboard" className="block py-2 px-4 text-sm hover:bg-gray-100">
-                  Dashboard
-                </Link>
-                <button 
-                  onClick={signOut}
-                  className="block w-full text-left py-2 px-4 text-sm hover:bg-gray-100"
-                >
-                  Sign Out
-                </button>
-              </>
-            ) : (
-              <>
-                <Link href="/login" className="block py-2 px-4 text-sm hover:bg-gray-100">
-                  Login
-                </Link>
-                <Link href="/signup" className="block py-2 px-4 text-sm hover:bg-gray-100">
-                  Get Started
-                </Link>
+                {user ? (
+                  <>
+                    <button 
+                      onClick={handleDashboardClick}
+                      className="block w-full text-left py-2 px-4 text-sm hover:bg-gray-100"
+                    >
+                      Dashboard
+                    </button>
+                    <div className="px-4 py-2 text-sm text-gray-600 border-b border-gray-200">
+                      Welcome, {user.firstName}
+                    </div>
+                    <button 
+                      onClick={handleLogout}
+                      className="block w-full text-left py-2 px-4 text-sm hover:bg-gray-100"
+                    >
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link href="/login" className="block py-2 px-4 text-sm hover:bg-gray-100">
+                      Login
+                    </Link>
+                    <Link href="/signup" className="block py-2 px-4 text-sm hover:bg-gray-100">
+                      Get Started
+                    </Link>
+                  </>
+                )}
               </>
             )}
           </div>
