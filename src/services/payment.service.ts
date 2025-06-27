@@ -29,11 +29,11 @@ export class PaymentService {
     /**
      * Create checkout session for course purchase
      * @param paymentRequest Payment request data
-     * @param courseId Course ID to purchase
+     * @param ref Course reference string
      * @returns Promise with Stripe checkout response
      */
-    public async checkoutCourse(paymentRequest: PaymentRequest, courseId: number): Promise<ApiResponse<StripeResponse>> {
-        return this.api.post<StripeResponse>(`${this.baseUrl}/checkout?idCourse=${courseId}`, paymentRequest);
+    public async checkoutCourse(paymentRequest: PaymentRequest, ref: string): Promise<ApiResponse<StripeResponse>> {
+        return this.api.post<StripeResponse>(`${this.baseUrl}/checkout?ref=${ref}`, paymentRequest);
     }
 
     public async createPayment(courseId: number): Promise<ApiResponse<Payment>> {

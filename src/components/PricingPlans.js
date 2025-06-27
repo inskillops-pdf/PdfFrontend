@@ -1,147 +1,112 @@
-import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function PricingPlans() {
-  const [isAnnual, setIsAnnual] = useState(true);
-  
-  const pricingPlans = [
+  const allCourses = [
     {
-      name: 'Basic',
-      description: 'Perfect for beginners looking to start their AI journey',
-      monthlyPrice: 49,
-      annualPrice: 470,
-      features: [
-        'Access to AI Fundamentals Course',
-        'Basic ChatGPT Prompting',
-        '30+ Beginner AI Templates',
-        'Community Access',
-        'Email Support'
-      ],
-      buttonText: 'Get Started',
-      buttonLink: '/signup?plan=basic',
-      highlighted: false
+      id: 'chatgpt-mastery',
+      ref: 'COURSE-6-A0GWYK',
+      title: 'ChatGPT Mastery',
+      description: 'Learn how to leverage ChatGPT for business applications and content creation.',
+      image: 'https://images.unsplash.com/photo-1678995632928-298d05d41671',
+      price: 199,
     },
     {
-      name: 'Pro',
-      description: 'For professionals seeking advanced AI mastery',
-      monthlyPrice: 99,
-      annualPrice: 950,
-      features: [
-        'All Basic Features',
-        'Full Access to All Courses',
-        '99 AI Bots Library',
-        'Bot Builder Training',
-        '17 Custom Chatbots',
-        'Priority Support',
-        'Monthly Webinars'
-      ],
-      buttonText: 'Get Pro Access',
-      buttonLink: '/signup?plan=pro',
-      highlighted: true
+      id: 'ai-bot-builder',
+      ref: 'COURSE-7-PJKSRN',
+      title: 'AI Bot Builder',
+      description: 'Create custom AI bots for customer service, sales, and lead generation.',
+      image: 'https://images.unsplash.com/photo-1589254065878-42c9da997008',
+      price: 249,
     },
     {
-      name: 'Enterprise',
-      description: 'For teams and businesses scaling AI solutions',
-      monthlyPrice: 199,
-      annualPrice: 1900,
-      features: [
-        'All Pro Features',
-        'Team Access (5 Members)',
-        'Custom AI Consulting',
-        'White-Label Rights',
-        'API Access',
-        '1-on-1 Coaching Sessions',
-        'Dedicated Account Manager'
-      ],
-      buttonText: 'Contact Sales',
-      buttonLink: '/contact',
-      highlighted: false
+      id: 'prompt-engineering',
+      ref: 'COURSE-8-OBCVJO',
+      title: 'Advanced Prompt Engineering',
+      description: 'Master the art of crafting effective prompts for any AI model.',
+      image: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485',
+      price: 149,
+    },
+    {
+      id: 'midjourney-mastery',
+      ref: 'MIDJOURNEY-MASTERY-001',
+      title: 'Midjourney Mastery',
+      description: 'Create stunning AI-generated artwork and imagery with Midjourney.',
+      image: 'https://images.unsplash.com/photo-1642427749670-f20e2e76ed8c',
+      price: 179,
+    },
+    {
+      id: 'ai-business-integration',
+      ref: 'AI-BUSINESS-INTEGRATION-001',
+      title: 'AI Business Integration',
+      description: 'Implement AI solutions in your business operations to drive growth.',
+      image: 'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3',
+      price: 299,
+    },
+    {
+      id: 'llm-fine-tuning',
+      ref: 'LLM-FINE-TUNING-001',
+      title: 'LLM Fine-Tuning & Training',
+      description: 'Learn to train and fine-tune large language models for specific applications.',
+      image: 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4',
+      price: 349,
     }
   ];
 
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(price);
+  };
+
   return (
-    <div className="py-16 bg-gray-50">
+    <div id="courses" className="py-16 bg-white">
       <div className="container-custom">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Simple, Transparent Pricing</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Explore Our Courses</h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Choose the plan that best fits your needs. All plans include access to our core AI training.
+            Find the perfect course to start your AI journey or advance your skills. Each course can be purchased individually.
           </p>
-          
-          <div className="mt-8 flex justify-center">
-            <div className="bg-white p-1 rounded-lg shadow-sm">
-              <div className="flex">
-                <button
-                  className={`py-2 px-4 rounded-lg ${!isAnnual ? 'bg-primary-100 text-primary-800' : 'text-gray-600'}`}
-                  onClick={() => setIsAnnual(false)}
-                >
-                  Monthly
-                </button>
-                <button
-                  className={`py-2 px-4 rounded-lg ${isAnnual ? 'bg-primary-100 text-primary-800' : 'text-gray-600'}`}
-                  onClick={() => setIsAnnual(true)}
-                >
-                  Annually <span className="text-xs font-semibold text-primary-600">(Save 20%)</span>
-                </button>
-              </div>
-            </div>
-          </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {pricingPlans.map((plan, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {allCourses.map((course) => (
             <div 
-              key={index}
-              className={`bg-white rounded-lg shadow-lg overflow-hidden ${plan.highlighted ? 'border-2 border-primary-500 transform md:-translate-y-4' : ''}`}
+              key={course.id}
+              className="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
             >
-              {plan.highlighted && (
-                <div className="bg-primary-500 text-white text-center py-2 font-semibold">
-                  Most Popular
-                </div>
-              )}
-              
-              <div className="p-8">
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
-                <p className="text-gray-600 mb-6">{plan.description}</p>
+              <div className="relative h-48 w-full">
+                <Image
+                  src={course.image}
+                  alt={course.title}
+                  fill
+                  style={{ objectFit: 'cover' }}
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                />
+              </div>
+              <div className="p-6 flex flex-col flex-grow">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">{course.title}</h3>
+                <p className="text-gray-600 mb-4 flex-grow">{course.description}</p>
                 
-                <div className="mb-6">
-                  <span className="text-4xl font-bold">${isAnnual ? plan.annualPrice : plan.monthlyPrice}</span>
-                  <span className="text-gray-500">/{isAnnual ? 'year' : 'month'}</span>
+                <div className="my-4">
+                  <span className="text-3xl font-bold text-gray-900">{formatPrice(course.price)}</span>
                 </div>
                 
                 <Link 
-                  href={plan.buttonLink}
-                  className={`block text-center py-3 px-4 rounded font-semibold mb-8 ${
-                    plan.highlighted
-                      ? 'bg-primary-600 hover:bg-primary-700 text-white'
-                      : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
-                  }`}
+                  href={`/courses/${course.id}`}
+                  className="block text-center w-full py-3 px-4 rounded-lg font-semibold mt-auto bg-primary-600 hover:bg-primary-700 text-white transition-colors duration-200"
                 >
-                  {plan.buttonText}
+                  View Course Details
                 </Link>
-                
-                <div className="border-t border-gray-200 pt-6">
-                  <p className="font-medium mb-4">What's included:</p>
-                  <ul className="space-y-3">
-                    {plan.features.map((feature, i) => (
-                      <li key={i} className="flex items-start">
-                        <svg className="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                        </svg>
-                        <span className="text-gray-600">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
               </div>
             </div>
           ))}
         </div>
         
-        <div className="mt-12 text-center">
-          <p className="text-gray-600 mb-4">Need a custom solution for your business?</p>
-          <Link href="/contact" className="text-primary-600 font-medium hover:text-primary-700">
-            Contact our sales team →
+        <div className="mt-16 text-center">
+          <Link href="/courses" className="text-primary-600 font-medium hover:text-primary-700">
+            View all courses →
           </Link>
         </div>
       </div>

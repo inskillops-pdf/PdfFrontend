@@ -2,11 +2,6 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/courses/[courseSlug]/module/[moduleId]": "pages/courses/[courseSlug]/module/[moduleId].js",
-  "/dashboard": "pages/dashboard.js",
-  "/": "pages/index.js",
-  "/courses": "pages/courses.js",
-  "/signup": "pages/signup.js",
   "/login": "pages/login.js",
-  "/courses/[courseSlug]": "pages/courses/[courseSlug].js"
+  "/": "pages/index.js"
 }

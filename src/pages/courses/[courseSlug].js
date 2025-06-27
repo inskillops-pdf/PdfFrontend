@@ -370,8 +370,8 @@ export default function CourseDetail() {
         email: currentUser?.email || ''
       };
 
-      // Call checkout endpoint
-      const response = await paymentService.checkoutCourse(paymentRequest, course.idCourse || course.id);
+      // Call checkout endpoint using the course reference
+      const response = await paymentService.checkoutCourse(paymentRequest, course.ref);
       
       if (response.success && response.data?.sessionUrl) {
         // Redirect to Stripe checkout using sessionUrl

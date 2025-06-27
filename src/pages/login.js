@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Layout from '../components/Layout';
 import { AuthService } from '../services/auth.service';
+import GoogleSignIn from '../components/GoogleSignIn';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -42,6 +43,20 @@ export default function Login() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoogleSuccess = () => {
+    // Google login successful, redirect
+    if (redirect) {
+      router.push(redirect);
+    } else {
+      router.push('/dashboard');
+    }
+  };
+
+  const handleGoogleError = (error) => {
+    console.error('Google login error:', error);
+    setError(error.message || 'Google login failed. Please try again.');
   };
 
   return (
@@ -101,6 +116,24 @@ export default function Login() {
                 </button>
               </div>
             </form>
+            
+            {/* Divider */}
+            <div className="relative mb-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">Or continue with</span>
+              </div>
+            </div>
+            
+            {/* Google Sign-In */}
+            <div className="mb-6">
+              <GoogleSignIn 
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
+              />
+            </div>
             
             <p className="mt-8 text-center text-sm text-gray-600">
               Don't have an account?{' '}

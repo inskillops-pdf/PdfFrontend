@@ -19,7 +19,7 @@ The development of LLMs has been rapid:
 3. **Neural Networks:** Enhanced understanding of language patterns
 4. **Transformer Models:** Revolutionary architecture enabling contextual understanding
 5. **GPT Models:** Increasingly sophisticated with each generation
-
+  api - getPdfWithRef
 ## How ChatGPT Fits In
 
 ChatGPT is a conversational AI built on OpenAI's GPT architecture. It's specifically designed to understand context within conversations and provide relevant, helpful responses. Unlike earlier chatbots, ChatGPT can:
