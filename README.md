@@ -115,3 +115,4 @@ The registration data is sent to the backend API using the `UserRegisterDTO` str
 - [Stripe](https://stripe.com/) - Payment processing
 - [Tailwind CSS](https://tailwindcss.com/) - CSS framework
 - [Axios](https://axios-http.com/) - HTTP client for API calls
+# PdfFrontend
